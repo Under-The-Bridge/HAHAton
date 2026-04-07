@@ -1,8 +1,3 @@
-<?php
-session_start();
-
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -20,14 +15,18 @@ session_start();
 <body>
     <div class="container">
         <h3>Регистрация</h3>
-        <form>
+        <form method="post" action="../server/auth-db.php">
             <div class="mb-3">
                 <label for="email" class="form-label">Почта</label>
-                <input type="email" class="form-control" id="email" name="email" aria-describedby="email">
+                <input type="email" class="form-control" id="email" name="email" require>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">ФИО</label>
+                <input type="email" class="form-control" id="fio" name="fio" require>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" name="password" id="password">
+                <input type="password" class="form-control" name="password" id="password" minlength="6" require>
             </div>
             <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
         </form>
