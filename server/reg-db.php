@@ -24,8 +24,8 @@ if (mysqli_num_rows($sql_check) > 0) {
     </script>";
 } else {
     echo "<script>
-    alert('Пользователь с данной почтой уже существует!');
-    location.href = '../reg.php';
+    alert('Учетная запись создана!');
+    location.href = '../auth.php';
     </script>";
 }
 ?>
