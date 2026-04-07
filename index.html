@@ -1,16 +1,3 @@
-<?php
-// require "connect-db.php";
-
-$country = $_GET["county"] ?? false;
-$event = $_GET["event"] ?? false;
-$persona = $_GET["persona"] ?? false;
-$search = $_GET["search"] ?? false;
-
-$sql = "select * from TABLE $country $event $search";
-
-echo $sql;
-
-?>
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -562,13 +549,6 @@ echo $sql;
         </div>
     </footer>
     </div>
-    <script>
-        let select = document.querySelectorAll("select");
-        select.forEach(element => {
-            element.addEventListener("change",()=>{
-                element.parentNode.submit();
-            })
-        });
-    </script>
 </body>
+
 </html>
