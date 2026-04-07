@@ -1,15 +1,63 @@
 <?php
-// require "connect-db.php";
+session_start();
+// Подключение к базе данных
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "space_timeline";
 
-$country = $_GET["county"] ?? false;
-$event = $_GET["event"] ?? false;
-$persona = $_GET["persona"] ?? false;
-$search = $_GET["search"] ?? false;
+// Создаем подключение
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-$sql = "select * from TABLE $country $event $search";
+// Проверяем подключение
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
-echo $sql;
+// Получаем параметры фильтрации
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+$country = isset($_GET['country']) ? $_GET['country'] : '';
 
+// Базовый SQL запрос
+$sql = "SELECT * FROM events WHERE 1=1";
+
+if (!empty($search)) {
+    $search_escaped = $conn->real_escape_string($search);
+    $sql .= " AND (title LIKE '%$search_escaped%' OR description LIKE '%$search_escaped%')";
+}
+
+if (!empty($country)) {
+    $country_escaped = $conn->real_escape_string($country);
+    $sql .= " AND country = '$country_escaped'";
+}
+
+$sql .= " ORDER BY event_date ASC";
+$result = $conn->query($sql);
+
+// Данные по умолчанию, если база пустая
+$events = [];
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $events[] = $row;
+    }
+} else {
+    // Дефолтные события
+    $events = [
+        ['id' => 1, 'title' => 'Запуск первого искусственного спутника Земли', 'description' => 'СССР запускает Спутник-1, открывая космическую эру человечества', 'event_date' => '1957-10-04', 'country' => 'СССР', 'image_url' => 'https://images.unsplash.com/photo-1614728263952-84ea256f9679?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400'],
+        ['id' => 2, 'title' => 'Первый полет человека в космос', 'description' => 'Юрий Гагарин совершает исторический полет на корабле "Восток-1"', 'event_date' => '1961-04-12', 'country' => 'СССР', 'image_url' => 'https://images.unsplash.com/photo-1598431415913-48cc762b469b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400'],
+        ['id' => 3, 'title' => 'Высадка на Луну', 'description' => 'Нил Армстронг и Базз Олдрин становятся первыми людьми на Луне', 'event_date' => '1969-07-20', 'country' => 'США', 'image_url' => 'https://images.unsplash.com/photo-1614726365930-627c75da663e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400']
+    ];
+}
+
+// Функция для форматирования даты
+function formatDate($date) {
+    $timestamp = strtotime($date);
+    return date('j', $timestamp) . ' ' . 
+           mb_convert_case(date('F', $timestamp), MB_CASE_TITLE, 'UTF-8') . ' ' . 
+           date('Y', $timestamp);
+}
+
+$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -59,11 +107,13 @@ echo $sql;
                                 <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
                                 <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
                             </svg><span>День космонавтики</span></a>
-                        <button class="search-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <path d="m21 21-4.35-4.35"></path>
-                            </svg><span>Поиск</span></button>
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <a href="profile.php" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Профиль</span></a>
+                            <a href="logout.php" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg><span>Выйти</span></a>
+                        <?php else: ?>
+                            <a href="reg.php" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Регистрация</span></a>
+                            <a href="auth.php" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg><span>Войти</span></a>
+                        <?php endif; ?>
                     </nav>
                     <button class="mobile-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -118,7 +168,7 @@ echo $sql;
                         </div>
                     </div>
                 </div>
-                <button class="hero-btn">Начать путешествие</button>
+                <button class="hero-btn" onclick="document.getElementById('timeline').scrollIntoView({behavior: 'smooth'})">Начать путешествие</button>
             </div>
         </section>
 
@@ -131,25 +181,28 @@ echo $sql;
                             </svg>
                             <h3>Фильтры</h3>
                         </div>
-                        <div class="filter-section"><label class="filter-label">Поиск событий</label>
-                            <div class="search-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <path d="m21 21-4.35-4.35"></path>
-                                </svg><input type="text" placeholder="Поиск..." /></div>
-                        </div>
-                        <div class="filter-section">
-                            <div class="filter-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                                    <path
-                                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
-                                    </path>
-                                </svg><label>Страны</label></div>
-                            <div class="checkbox-group"><label class="checkbox-label"><input
-                                        type="checkbox" /><span>СССР/Россия</span></label><label><input
-                                        type="checkbox" /><span>США</span></label></div>
-                        </div>
-                        <button class="reset-btn">Сбросить фильтры</button>
+                        <form method="GET" action="" id="filterForm">
+                            <div class="filter-section"><label class="filter-label">Поиск событий</label>
+                                <div class="search-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <path d="m21 21-4.35-4.35"></path>
+                                    </svg><input type="text" name="search" placeholder="Поиск..." value="<?php echo htmlspecialchars($search); ?>" onchange="this.form.submit()" /></div>
+                            </div>
+                            <div class="filter-section">
+                                <div class="filter-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                                        <path
+                                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                                        </path>
+                                    </svg><label>Страны</label></div>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label"><input type="checkbox" name="country" value="СССР" <?php echo $country == 'СССР' ? 'checked' : ''; ?> onchange="this.form.submit()" /><span>СССР/Россия</span></label>
+                                    <label class="checkbox-label"><input type="checkbox" name="country" value="США" <?php echo $country == 'США' ? 'checked' : ''; ?> onchange="this.form.submit()" /><span>США</span></label>
+                                </div>
+                            </div>
+                            <button type="button" class="reset-btn" onclick="window.location.href='index.php'">Сбросить фильтры</button>
+                        </form>
                     </aside>
 
                     <main class="timeline-main" id="timeline">
@@ -220,43 +273,16 @@ echo $sql;
 
                         <div class="timeline">
                             <div class="timeline-line"></div>
-                            <div class="timeline-event event-left">
-                                <div class="timeline-point"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path
-                                            d="M4.5 16.5c-1.5 1.25-2 5-2 5s3.75-.5 5-2c.625-.625 1-1.5 1-2.5v-1l4-4 4 4v1c0 1 .375 1.875 1 2.5 1.25 1.5 5 2 5 2s-.5-3.75-2-5c-.625-.625-1.5-1-2.5-1h-1l-4-4-4 4h-1c-1 0-1.875.375-2.5 1z" />
-                                    </svg></div>
-                                <div class="event-card">
-                                    <div class="event-image"><img src="https://images.unsplash.com/photo-1614728263952-84ea256f9679?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Спутник-1" />
-                                        <div class="event-badge">СССР</div>
-                                    </div>
-                                    <div class="event-content">
-                                        <div class="event-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                                            </svg><span>4 октября 1957</span></div>
-                                        <h3>Запуск первого искусственного спутника Земли</h3>
-                                        <p>СССР запускает Спутник-1, открывая космическую эру человечества</p>
-                                        <div class="event-footer"><span>Подробнее</span><a href="#" class="read-more"><span>Читать далее</span><svg viewBox="0 0 24 24"
-                                                    fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6">
-                                                    </path>
-                                                    <polyline points="15 3 21 3 21 9"></polyline>
-                                                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                                                </svg></a></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="timeline-event event-right">
+                            <?php $counter = 0; foreach($events as $event): ?>
+                            <div class="timeline-event <?php echo $counter % 2 == 0 ? 'event-left' : 'event-right'; ?>">
                                 <div class="timeline-point"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                                         <circle cx="9" cy="7" r="4"></circle>
                                         <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path>
                                     </svg></div>
                                 <div class="event-card">
-                                    <div class="event-image"><img src="https://images.unsplash.com/photo-1598431415913-48cc762b469b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Гагарин" />
-                                        <div class="event-badge">СССР</div>
+                                    <div class="event-image"><img src="<?php echo htmlspecialchars($event['image_url']); ?>" alt="<?php echo htmlspecialchars($event['title']); ?>" />
+                                        <div class="event-badge"><?php echo htmlspecialchars($event['country']); ?></div>
                                     </div>
                                     <div class="event-content">
                                         <div class="event-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -264,9 +290,9 @@ echo $sql;
                                                 <line x1="16" y1="2" x2="16" y2="6"></line>
                                                 <line x1="8" y1="2" x2="8" y2="6"></line>
                                                 <line x1="3" y1="10" x2="21" y2="10"></line>
-                                            </svg><span>12 апреля 1961</span></div>
-                                        <h3>Первый полет человека в космос</h3>
-                                        <p>Юрий Гагарин совершает исторический полет на корабле "Восток-1"</p>
+                                            </svg><span><?php echo formatDate($event['event_date']); ?></span></div>
+                                        <h3><?php echo htmlspecialchars($event['title']); ?></h3>
+                                        <p><?php echo htmlspecialchars($event['description']); ?></p>
                                         <div class="event-footer"><span>Подробнее</span><a href="#" class="read-more"><span>Читать далее</span><svg viewBox="0 0 24 24"
                                                     fill="none" stroke="currentColor" stroke-width="2">
                                                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6">
@@ -277,37 +303,12 @@ echo $sql;
                                     </div>
                                 </div>
                             </div>
-                            <div class="timeline-event event-left">
-                                <div class="timeline-point"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                    </svg></div>
-                                <div class="event-card">
-                                    <div class="event-image"><img src="https://images.unsplash.com/photo-1614726365930-627c75da663e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" alt="Луна" />
-                                        <div class="event-badge">США</div>
-                                    </div>
-                                    <div class="event-content">
-                                        <div class="event-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                                            </svg><span>20 июля 1969</span></div>
-                                        <h3>Высадка на Луну</h3>
-                                        <p>Нил Армстронг и Базз Олдрин становятся первыми людьми на Луне</p>
-                                        <div class="event-footer"><span>Подробнее</span><a href="#" class="read-more"><span>Читать далее</span><svg viewBox="0 0 24 24"
-                                                    fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6">
-                                                    </path>
-                                                    <polyline points="15 3 21 3 21 9"></polyline>
-                                                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                                                </svg></a></div>
-                                    </div>
-                                </div>
-                            </div>
+                            <?php $counter++; endforeach; ?>
+                            <?php if(empty($events)): ?>
+                            <div class="text-center py-5" style="color: #9ca3af;">Событий не найдено. Попробуйте изменить параметры поиска.</div>
+                            <?php endif; ?>
                         </div>
-                        <div class="load-more"><button class="load-more-btn">Показать больше событий</button></div>
+                        <div class="load-more"><button class="load-more-btn" onclick="alert('Все события загружены')">Показать больше событий</button></div>
                     </main>
                 </div>
             </div>
@@ -563,12 +564,45 @@ echo $sql;
     </footer>
     </div>
     <script>
-        let select = document.querySelectorAll("select");
-        select.forEach(element => {
-            element.addEventListener("change",()=>{
-                element.parentNode.submit();
-            })
+        // Мобильное меню
+        document.querySelector('.mobile-menu')?.addEventListener('click', function() {
+            const nav = document.querySelector('.nav');
+            if (nav) {
+                nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
+                nav.style.flexDirection = 'column';
+                nav.style.position = 'absolute';
+                nav.style.top = '70px';
+                nav.style.left = '0';
+                nav.style.right = '0';
+                nav.style.backgroundColor = '#030712';
+                nav.style.padding = '1rem';
+                nav.style.gap = '1rem';
+                nav.style.borderBottom = '1px solid #1f2937';
+            }
+        });
+
+        // Адаптация при изменении размера окна
+        window.addEventListener('resize', function() {
+            const nav = document.querySelector('.nav');
+            if (window.innerWidth >= 768) {
+                if (nav) {
+                    nav.style.display = 'flex';
+                    nav.style.flexDirection = 'row';
+                    nav.style.position = 'static';
+                    nav.style.backgroundColor = 'transparent';
+                    nav.style.padding = '0';
+                    nav.style.borderBottom = 'none';
+                }
+            } else {
+                const mobileMenu = document.querySelector('.mobile-menu');
+                if (mobileMenu && nav && window.getComputedStyle(nav).display === 'flex') {
+                    // Оставляем как есть
+                } else if (nav) {
+                    nav.style.display = 'none';
+                }
+            }
         });
     </script>
 </body>
+
 </html>
