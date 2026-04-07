@@ -1,0 +1,112 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    background-image: url('../images/wallpaper.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    height: 50vh;
+    width: 30vw;
+    /* Прозрачный фон с серым оттенком */
+    background: rgba(227, 227, 227, 0.06);
+    backdrop-filter: blur(10px);
+    /* Скругление самой формы */
+    border-radius: 15px;
+    z-index: 1;
+}
+
+form::before {
+    content: "";
+    position: absolute;
+    /* Растягиваем на всю площадь + толщина рамки */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 2px;
+    /* Это и есть толщина вашей рамки */
+    /* Градиент рамки */
+    background: linear-gradient(to right bottom, #d9d9d9, #ffffff27, #ffffff);
+    /* Скругление рамки (должно совпадать с формой) */
+    border-radius: 15px;
+    /* Магия: вырезаем внутреннюю часть, оставляя только ободок */
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    z-index: -1;
+}
+
+input {
+    width: 28vw;
+    height: 5vh;
+    background: rgba(227, 227, 227, 0.47);
+    border: 1px solid rgb(236, 236, 236);
+    border-radius: 15px;
+    font-size: 18px;
+    padding-left: 20px;
+    color: rgb(236, 236, 236);
+    outline: none;
+}
+
+input::placeholder {
+    color: #fff;
+}
+
+h1 {
+    color: rgb(245, 245, 245);
+    -webkit-text-stroke: 0, 8px rgb(182, 182, 182);
+    font-size: 42px;
+}
+
+button {
+    width: 15vw;
+    height: 7vh;
+    font-size: 20px;
+    background-color: #777777a9;
+    border: none;
+    color: rgb(236, 236, 236);
+    border-radius: 15px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: #383838bd;
+}
+
+.ssilka {
+    width: 25vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h2 {
+    color: rgb(245, 245, 245);
+    font-size: 18px;
+}
+
+a {
+    color: #bebebed9;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+a:hover {
+    text-decoration: underline;
+}

@@ -4,33 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"
-        async defer></script>
-    <title>Авторизация</title>
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="../styles/stylereg.css">
 </head>
 
 <body>
-    <div class="container">
-        <h3>Регистрация</h3>
-        <form method="post" action="../server/reg-db.php">
-            <div class="mb-3">
-                <label for="email" class="form-label">Почта</label>
-                <input type="email" class="form-control" id="email" name="email" require>
-            </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">ФИО</label>
-                <input type="text" class="form-control" id="fio" name="fio" require>
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" name="password" id="password" minlength="6" require>
-            </div>
-            <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
-        </form>
-    </div>
+    <form action="../server/reg-db.php" method="post">
+        <h1>Регистрация</h1>
+        <input type="email" placeholder="Напишите свою почту" required name="login">
+        <input type="password" placeholder="Напишите свой пароль" required name="password">
+        <input type="text" placeholder="Напишите своё ФИО" required name="fio">
+        <div class="ssilka">
+            <h2>Уже есть аккаунт?</h2>
+            <a href="auth.php">Авторизоваться</a>
+        </div>
+        <button type="submit" name="btnReg">Зарегистрироваться</button>
+    </form>
 </body>
 
 </html>

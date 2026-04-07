@@ -1,35 +1,24 @@
-<?php
-session_start();
-
-?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"
-        async defer></script>
-    <title>Регистрация</title>
+    <title>Авторизация</title>
+    <link rel="stylesheet" href="../styles/styleauth.css">
 </head>
 
 <body>
-    <div class="container">
-        <form method="post" action="../server/auth-db.php">
-            <div class="mb-3">
-                <label for="email" class="form-label">Почта</label>
-                <input type="email" class="form-control" id="email" name="email" aria-describedby="email">
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" name="password" id="password">
-            </div>
-            <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
-        </form>
-    </div>
+    <form action="../server/auth-db.php" method="post">
+        <h1>Авторизация</h1>
+        <input type="text" placeholder="Напишите свой логин" required name="login">
+        <input type="password" placeholder="Напишите свой пароль" required name="password">
+        <div class="ssilka">
+            <h2>Ещё нет аккаунта?</h2>
+            <a href="reg.php">Зарегистрироваться</a>
+        </div>
+        <button type="submit" name="btnReg">Авторизоваться</button>
+    </form>
 </body>
 
 </html>
