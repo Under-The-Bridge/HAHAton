@@ -1,14 +1,18 @@
 <?php
-// require "connect-db.php";
+require "components/conn.php";
 
-$country = $_GET["county"] ?? false;
+$country = $_GET["country"] ?? false;
 $event = $_GET["event"] ?? false;
 $persona = $_GET["persona"] ?? false;
 $search = $_GET["search"] ?? false;
 
-$sql = "select * from TABLE $country $event $search";
+$sql = "select * from TABLE $country $event $persona $search";
 
 echo $sql;
+
+$filter_country = mysqli_fetch_all(mysqli_query($conn, "select * from countries"));
+$filter_event = mysqli_fetch_all(mysqli_query($conn, "select * from events"));
+$filter_persona = mysqli_fetch_all(mysqli_query($conn, "select * from persons"));
 
 ?>
 <!DOCTYPE html>
@@ -21,16 +25,19 @@ echo $sql;
 <body>
     <form>
         <select name="country" id="">
-            <option value="СССР">СССР</option>
-            <option value="США">США</option>
+            <?foreach($filter_country as $elem) :?>
+                <option value="<?= $elem[0]?>" <?=($country == $elem[0]) ? "selected" : "" ?>><?= $elem[1]?></option>
+            <?php endforeach;?>
         </select>
         <select name="event" id="">
-            <option value="Запуск">Запуск</option>
-            <option value="Полет">Полет</option>
+            <?foreach($filter_event as $elem) :?>
+                <option value="<?= $elem[0]?>" <?=($event == $elem[0]) ? "selected" : "" ?>><?= $elem[1]?></option>
+            <?php endforeach;?>
         </select>
         <select name="persona" id="">
-            <option value="Гагарин">Гагарин</option>
-            <option value="Армстронг">Армстронг</option>
+            <?foreach($filter_persona as $elem) :?>
+                <option value="<?= $elem[0]?>" <?=($persona == $elem[0]) ? "selected" : "" ?>><?= $elem[1]?></option>
+            <?php endforeach;?>
         </select>
         <input type="text" name="search" value="<?=$search?>">
         <button>искать</button>
