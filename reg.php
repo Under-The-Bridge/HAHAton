@@ -15,7 +15,7 @@
 <body>
     <div class="container">
         <h3>Регистрация</h3>
-        <form method="post" action="../server/auth-db.php">
+        <form method="post" action="../server/reg-db.php">
             <div class="mb-3">
                 <label for="email" class="form-label">Почта</label>
                 <input type="email" class="form-control" id="email" name="email" require>
